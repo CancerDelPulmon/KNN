@@ -1,8 +1,10 @@
-
-
 import numpy as np
 from PySide6 import QtCore, QtGui
-from __feature__ import snake_case, true_property 
+try:
+    from __feature__ import snake_case, true_property
+except ImportError:
+    # Fallback if __feature__ is not available
+    pass
 
 
 def qimage_argb32_from_png_decoding(img_data):

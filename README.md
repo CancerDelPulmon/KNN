@@ -1,6 +1,4 @@
 # KNN
-l'interpreteur a choisir est dans le repository github, select : .venv/bin/python (je crois)
-comme lien vers l'interpreteur
 
 pour verifier l'installation des differents modules : pip list
 
