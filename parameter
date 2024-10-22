@@ -1,3 +1,3 @@
 1 : compactness = (4*PI * area_of_shape) / perimeter_of_shape^2
-2 : shape_index = perimeter_of_shape / sqrt(area_of_shape)
-3 : eccentricity = sqrt(1 - compactness)
+2 : circle_ratio = area_of_shape / area_of_cicle_of the same size
+3 : inner_circle_ratio = inner_circle_radius/ outer_circle_radius
