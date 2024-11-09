@@ -6,11 +6,11 @@ import sys
 from PySide6.QtWidgets import ( QApplication, QMainWindow, QWidget, 
                                 QHBoxLayout, QVBoxLayout, QTabWidget,
                                 QLabel, QGroupBox, QComboBox,QFormLayout,
-                                QPushButton, QSlider, QSplitter)
+                                QPushButton, QSlider, QSplitter, QMessageBox, QListWidget)
 
 from PySide6.QtGui import QPixmap
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Slot  
 
 from __feature__ import snake_case
 
@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
         # Tabs   
         tab_widget = QTabWidget()
         klustr_source_viewer_tab = source_data_widget
-        knn_image_classification_tab = knnImageClassificationWidget()
+        knn_image_classification_tab = knnImageClassificationWidget(klustr_dao)
         tab_widget.add_tab(klustr_source_viewer_tab, 'KlustR Source Viewer')
         tab_widget.add_tab(knn_image_classification_tab, 'Knn Image Classification')
 
@@ -54,15 +54,12 @@ class MainWindow(QMainWindow):
 
         
 class knnImageClassificationWidget(QWidget):
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, dao, parent: QWidget = None):
         super().__init__(parent)
         self.set_window_title('KlustR KNN Classification')
-        self.__init_gui()
-
-    def __init_gui(self):
         scatter_3d_viewer_widget = QScatter3dViewer()
-        data_selector_widget = dataSelectorWidget()
-
+        data_selector_widget = dataSelectorWidget(dao)
+        self.credential = dao
         splitter = QSplitter(Qt.Horizontal)
         splitter.add_widget(data_selector_widget)
         splitter.add_widget(scatter_3d_viewer_widget)
@@ -77,22 +74,20 @@ class knnImageClassificationWidget(QWidget):
 
 
 class dataSelectorWidget(QWidget):
-    def __init__(self, parent: QWidget = None):
+
+    def __init__(self, dao, parent: QWidget = None, ):
         super().__init__(parent)
         self.set_window_title('Data Selector')
-        self.__init_gui()
-
-    def __init_gui(self):
         # Dataset
         dataset_vertical_layout = QVBoxLayout()
         dataset_horizontal_layout = QHBoxLayout()
-
+        self.dao = dao
         dataset_widget = QGroupBox('Dataset')
         dataset_widget.set_layout(dataset_vertical_layout)
         
-        dataset_combo = QComboBox()
-        dataset_combo.add_item('ABC [2][10]')
-        dataset_vertical_layout.add_widget(dataset_combo)
+        self.dataset_combo = QComboBox()
+        self.dataset_combo.set_placeholder_text("Select Dataset")
+        dataset_vertical_layout.add_widget(self.dataset_combo)
 
         # Included in dataset & Transformation
         dataset_vertical_layout.add_layout(dataset_horizontal_layout)
@@ -190,9 +185,38 @@ class dataSelectorWidget(QWidget):
         main_layout.add_widget(single_test_widget)
         main_layout.add_widget(knn_parameters_widget)
         main_layout.add_widget(about_button)
+        self.populate_dataset_combo()
+        # Connect ComboBox selection change to data loading
+        self.dataset_combo.currentIndexChanged.connect(self.on_dataset_selected)
+    def populate_dataset_combo(self):
+        # Fetch dataset names from PostgreSQL and add them to the ComboBox
+        if self.dao.is_available:
+            datasets = self.dao.available_datasets
+            if datasets:
+                # Assuming the dataset name is the first column in the result
+                dataset_names = [row[1] for row in datasets]
+                self.dataset_combo.add_items(dataset_names)
+            else:
+                QMessageBox.warning(self, "No Datasets", "No datasets available in the database.")
+        else:
+            QMessageBox.critical(self, "Database Error", "Database connection is not available.")
 
+    @Slot()
+    def on_dataset_selected(self, index):
+        # Load the selected dataset when a new item is selected in the ComboBox
+        pass
 
-
+    def load_data_into_viewer(self, data, title="Dataset"):
+        # Clear existing series and load new data into the viewer
+        """
+        self.scatter_viewer.clear()
+        # Convert data to NumPy array
+        data_np = np.array(data)
+        # Add series to viewer
+        color = QColorSequence.next()
+        self.scatter_viewer.add_serie(data_np, color, title=title)
+        """
+        pass
 
 
 
