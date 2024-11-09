@@ -1,15 +1,9 @@
-
-
 import sys
-
-
 from PySide6.QtWidgets import ( QApplication, QMainWindow, QWidget, 
                                 QHBoxLayout, QVBoxLayout, QTabWidget,
                                 QLabel, QGroupBox, QComboBox,QFormLayout,
                                 QPushButton, QSlider, QSplitter, QMessageBox, QListWidget)
-
 from PySide6.QtGui import QPixmap
-
 from PySide6.QtCore import Qt, Slot  
 
 from __feature__ import snake_case
@@ -19,11 +13,13 @@ from scatter_3d_viewer import QScatter3dViewer
 
 from klustr_widget import PostgreSQLCredential, PostgreSQLKlustRDAO, KlustRDataSourceViewWidget
  
+from model import Model
 
 
 
 
-class MainWindow(QMainWindow):
+
+class Vue(QMainWindow):
     def __init__(self):
         super().__init__()
         self.set_window_title('KlustR KNN Classifier')
@@ -49,17 +45,13 @@ class MainWindow(QMainWindow):
         central_layout = QVBoxLayout(central_widget)
         central_layout.add_widget(tab_widget)
 
-
-
-
         
 class knnImageClassificationWidget(QWidget):
     def __init__(self, dao, parent: QWidget = None):
         super().__init__(parent)
         self.set_window_title('KlustR KNN Classification')
         scatter_3d_viewer_widget = QScatter3dViewer()
-        data_selector_widget = dataSelectorWidget(dao)
-        self.credential = dao
+        data_selector_widget = dataSelectorWidget()
         splitter = QSplitter(Qt.Horizontal)
         splitter.add_widget(data_selector_widget)
         splitter.add_widget(scatter_3d_viewer_widget)
@@ -68,20 +60,15 @@ class knnImageClassificationWidget(QWidget):
         main_layout.add_widget(splitter)
 
 
-
-
-
-
-
 class dataSelectorWidget(QWidget):
 
-    def __init__(self, dao, parent: QWidget = None, ):
+    def __init__(self, parent: QWidget = None, ):
         super().__init__(parent)
         self.set_window_title('Data Selector')
         # Dataset
         dataset_vertical_layout = QVBoxLayout()
         dataset_horizontal_layout = QHBoxLayout()
-        self.dao = dao
+
         dataset_widget = QGroupBox('Dataset')
         dataset_widget.set_layout(dataset_vertical_layout)
         
@@ -189,17 +176,11 @@ class dataSelectorWidget(QWidget):
         # Connect ComboBox selection change to data loading
         self.dataset_combo.currentIndexChanged.connect(self.on_dataset_selected)
     def populate_dataset_combo(self):
-        # Fetch dataset names from PostgreSQL and add them to the ComboBox
-        if self.dao.is_available:
-            datasets = self.dao.available_datasets
-            if datasets:
-                # Assuming the dataset name is the first column in the result
-                dataset_names = [row[1] for row in datasets]
-                self.dataset_combo.add_items(dataset_names)
-            else:
-                QMessageBox.warning(self, "No Datasets", "No datasets available in the database.")
+        dataset_names = Model.getNames(Model())
+        if type(dataset_names) == list:
+            self.dataset_combo.add_items(dataset_names)
         else:
-            QMessageBox.critical(self, "Database Error", "Database connection is not available.")
+            QMessageBox.warning(self, dataset_names)
 
     @Slot()
     def on_dataset_selected(self, index):
@@ -222,7 +203,7 @@ class dataSelectorWidget(QWidget):
 
 def main ():
     app = QApplication(sys.argv)
-    main_window = MainWindow()
+    main_window = Vue()
     main_window.show()
     sys.exit(app.exec())
 
