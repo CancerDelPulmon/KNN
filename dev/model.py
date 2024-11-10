@@ -1,10 +1,12 @@
 
 from klustr_widget import PostgreSQLCredential, PostgreSQLKlustRDAO
+from klustr_utils import qimage_argb32_from_png_decoding, ndarray_from_qimage_argb32
 
 class Model():
     def __init__(self):
-        credential = PostgreSQLCredential(host='localhost', port=5432, database='postgres', user='postgres', password='AAAaaa123')
-        self.dao = PostgreSQLKlustRDAO(credential)
+        self.credential = PostgreSQLCredential(host='localhost', port=5432, database='postgres', user='postgres', password='AAAaaa123')
+        self.dao = PostgreSQLKlustRDAO(self.credential)
+        
     @staticmethod
     def getNames(self):
         # Fetch dataset names from PostgreSQL and add them to the ComboBox

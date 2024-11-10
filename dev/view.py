@@ -12,14 +12,10 @@ from __feature__ import snake_case
 from scatter_3d_viewer import QScatter3dViewer
 
 from klustr_widget import PostgreSQLCredential, PostgreSQLKlustRDAO, KlustRDataSourceViewWidget
- 
 from model import Model
 
 
-
-
-
-class Vue(QMainWindow):
+class View(QMainWindow):
     def __init__(self):
         super().__init__()
         self.set_window_title('KlustR KNN Classifier')
@@ -37,7 +33,7 @@ class Vue(QMainWindow):
         # Tabs   
         tab_widget = QTabWidget()
         klustr_source_viewer_tab = source_data_widget
-        knn_image_classification_tab = knnImageClassificationWidget(klustr_dao)
+        knn_image_classification_tab = KnnImageClassificationWidget(klustr_dao)
         tab_widget.add_tab(klustr_source_viewer_tab, 'KlustR Source Viewer')
         tab_widget.add_tab(knn_image_classification_tab, 'Knn Image Classification')
 
@@ -46,12 +42,12 @@ class Vue(QMainWindow):
         central_layout.add_widget(tab_widget)
 
         
-class knnImageClassificationWidget(QWidget):
+class KnnImageClassificationWidget(QWidget):
     def __init__(self, dao, parent: QWidget = None):
         super().__init__(parent)
         self.set_window_title('KlustR KNN Classification')
         scatter_3d_viewer_widget = QScatter3dViewer()
-        data_selector_widget = dataSelectorWidget()
+        data_selector_widget = DataSelectorWidget()
         splitter = QSplitter(Qt.Horizontal)
         splitter.add_widget(data_selector_widget)
         splitter.add_widget(scatter_3d_viewer_widget)
@@ -60,7 +56,7 @@ class knnImageClassificationWidget(QWidget):
         main_layout.add_widget(splitter)
 
 
-class dataSelectorWidget(QWidget):
+class DataSelectorWidget(QWidget):
 
     def __init__(self, parent: QWidget = None, ):
         super().__init__(parent)
@@ -175,6 +171,7 @@ class dataSelectorWidget(QWidget):
         self.populate_dataset_combo()
         # Connect ComboBox selection change to data loading
         self.dataset_combo.currentIndexChanged.connect(self.on_dataset_selected)
+
     def populate_dataset_combo(self):
         dataset_names = Model.getNames(Model())
         if type(dataset_names) == list:
@@ -201,12 +198,3 @@ class dataSelectorWidget(QWidget):
 
 
 
-def main ():
-    app = QApplication(sys.argv)
-    main_window = Vue()
-    main_window.show()
-    sys.exit(app.exec())
-
-
-if __name__ == "__main__":
-    main()
