@@ -6,8 +6,8 @@ class Model():
     def __init__(self):
         self.credential = PostgreSQLCredential(host='localhost', port=5432, database='postgres', user='postgres', password='AAAaaa123')
         self.dao = PostgreSQLKlustRDAO(self.credential)
-        
-    @staticmethod
+
+
     def getNames(self):
         # Fetch dataset names from PostgreSQL and add them to the ComboBox
         if self.dao.is_available:

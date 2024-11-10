@@ -16,8 +16,9 @@ from model import Model
 
 
 class View(QMainWindow):
-    def __init__(self):
+    def __init__(self, model):
         super().__init__()
+        self.model = model
         self.set_window_title('KlustR KNN Classifier')
         self.__init_gui()
 
@@ -33,7 +34,7 @@ class View(QMainWindow):
         # Tabs   
         tab_widget = QTabWidget()
         klustr_source_viewer_tab = source_data_widget
-        knn_image_classification_tab = KnnImageClassificationWidget(klustr_dao)
+        knn_image_classification_tab = KnnImageClassificationWidget(self.model, klustr_dao)
         tab_widget.add_tab(klustr_source_viewer_tab, 'KlustR Source Viewer')
         tab_widget.add_tab(knn_image_classification_tab, 'Knn Image Classification')
 
@@ -43,11 +44,12 @@ class View(QMainWindow):
 
         
 class KnnImageClassificationWidget(QWidget):
-    def __init__(self, dao, parent: QWidget = None):
+    def __init__(self, model, dao, parent: QWidget = None):
         super().__init__(parent)
+        self.model = model
         self.set_window_title('KlustR KNN Classification')
         scatter_3d_viewer_widget = QScatter3dViewer()
-        data_selector_widget = DataSelectorWidget()
+        data_selector_widget = DataSelectorWidget(model)
         splitter = QSplitter(Qt.Horizontal)
         splitter.add_widget(data_selector_widget)
         splitter.add_widget(scatter_3d_viewer_widget)
@@ -57,9 +59,9 @@ class KnnImageClassificationWidget(QWidget):
 
 
 class DataSelectorWidget(QWidget):
-
-    def __init__(self, parent: QWidget = None, ):
+    def __init__(self, model, parent: QWidget = None):
         super().__init__(parent)
+        self.model = model
         self.set_window_title('Data Selector')
         # Dataset
         dataset_vertical_layout = QVBoxLayout()
@@ -173,7 +175,7 @@ class DataSelectorWidget(QWidget):
         self.dataset_combo.currentIndexChanged.connect(self.on_dataset_selected)
 
     def populate_dataset_combo(self):
-        dataset_names = Model.getNames(Model())
+        dataset_names = self.model.getNames()
         if type(dataset_names) == list:
             self.dataset_combo.add_items(dataset_names)
         else:

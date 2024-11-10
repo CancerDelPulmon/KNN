@@ -7,12 +7,10 @@ from view import View
 
 
 class Main():
-    
-
     def __init__(self):   
         self.app = QApplication(sys.argv)
         self.model = Model()
-        self.view = View()
+        self.view = View(self.model)
 
     def run (self):
         self.view.show()
