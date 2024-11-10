@@ -14,6 +14,8 @@ class Main():
 
     def run (self):
         self.view.show()
+
+        self.model.compactness() # pour test 
     
 
 

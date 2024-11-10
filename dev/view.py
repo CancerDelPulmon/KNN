@@ -108,9 +108,9 @@ class DataSelectorWidget(QWidget):
         single_test_widget = QGroupBox('Single test')
         single_test_widget.set_layout(single_test_layout)
         
-        single_test_combo = QComboBox()
-        single_test_combo.add_item('img_ellipsoid_200_200_100_0031')
-        single_test_layout.add_widget(single_test_combo)
+        self.single_test_combo = QComboBox()
+        self.single_test_combo.add_item('No Dataset Selected')
+        single_test_layout.add_widget(self.single_test_combo)
 
         pixmap = QPixmap('../image_test.jpg')
         image_label = QLabel()
@@ -173,18 +173,60 @@ class DataSelectorWidget(QWidget):
         self.populate_dataset_combo()
         # Connect ComboBox selection change to data loading
         self.dataset_combo.currentIndexChanged.connect(self.on_dataset_selected)
+        self.single_test_combo.currentIndexChanged.connect(self.on_image_selected)
+
+
 
     def populate_dataset_combo(self):
-        dataset_names = self.model.getNames()
+        dataset_names = self.model.get_dataset_names()
         if type(dataset_names) == list:
             self.dataset_combo.add_items(dataset_names)
         else:
             QMessageBox.warning(self, dataset_names)
 
-    @Slot()
+
+    def populate_images_single_test_combo(self, dataset_name):
+        self.single_test_combo.clear()
+        images_names = self.model.get_images_names_from_dataset(dataset_name)
+        if type(images_names) == list:
+            self.single_test_combo.add_items(images_names)
+        else:
+            QMessageBox.warning(self, self.single_test_combo)
+
+
+    def display_selected_image(self, image_name):
+        image = self.model.get_image_from_image_name(image_name)
+        
+
+
+    def get_dataset_name(self, index):
+       return self.dataset_combo.item_text(index)
+
+
+    def get_image_name(self, index):
+        return self.single_test_combo.item_text(index)
+
+
+
+
+    @Slot(int)
     def on_dataset_selected(self, index):
         # Load the selected dataset when a new item is selected in the ComboBox
-        pass
+        self.index_dataset = index
+        dataset_name = self.get_dataset_name(index)
+        if dataset_name:
+            self.populate_images_single_test_combo(dataset_name)
+        
+    
+    @Slot(int)
+    def on_image_selected(self, index):
+        # Load the selected dataset when a new item is selected in the ComboBox
+        self.index_image = index
+        image_name = self.get_image_name(index)
+        if image_name:
+            self.display_selected_image(image_name)
+
+
 
     def load_data_into_viewer(self, data, title="Dataset"):
         # Clear existing series and load new data into the viewer

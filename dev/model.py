@@ -8,7 +8,7 @@ class Model():
         self.dao = PostgreSQLKlustRDAO(self.credential)
 
 
-    def getNames(self):
+    def get_dataset_names(self):
         # Fetch dataset names from PostgreSQL and add them to the ComboBox
         if self.dao.is_available:
             datasets = self.dao.available_datasets
@@ -19,6 +19,25 @@ class Model():
                 return  "No Datasets", "No datasets available in the database."
         else:
             return "Database Error", "Database connection is not available."
+        
+
+    def get_images_names_from_dataset(self, dataset_name):
+        # Fetches images names from a specified dataset
+        if self.dao.is_available:
+            images = self.dao.image_from_dataset(dataset_name, False)
+            if images:
+                images_names = [row[3] for row in images]
+                return images_names
+            else:
+                return  "No Datasets", "No datasets available in the database."
+        else:
+            return "Database Error", "Database connection is not available."    
+
+
+    def get_image_from_image_name(self, image_name):
+        ... # A continuer
+
+
     def analyse_data(self):
         pass
     def perimeter(self):
@@ -27,8 +46,21 @@ class Model():
         pass
     def centroid(self):
         pass
+
+    # En test
     def compactness(self):
-        pass
+        import numpy as np
+        import sys
+        # np.set_printoptions(threshold=sys.maxsize)
+        sql_result = self.dao.image_from_label(1)
+        sql_image_id = sql_result[0][2]
+        sql_image_result = self.dao._execute_simple_query('SELECT * FROM klustr.image WHERE id=%s;', (sql_image_id,))
+        sql_image = sql_image_result[0][3]
+        image = qimage_argb32_from_png_decoding(sql_image)
+        np_image = ndarray_from_qimage_argb32(image)
+        np_image.reshape(150,150)
+        print(np_image)
+    
     def circle_ratio(self):
         pass
     def inner_circle_ratio(self):

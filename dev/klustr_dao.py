@@ -78,6 +78,7 @@ class PostgreSQLKlustRDAO(KlustRDAO):
             self.pg_connection = pg.connect(self._pg_connection_credential.connection_string)
             self.pg_cursor = self.pg_connection.cursor()
             self._is_available = True
+            self.set_transformation_filters()
         except Exception as error:
             self._is_available = False
             print('La connection à la base de données a échouée avec le message suivant :')
