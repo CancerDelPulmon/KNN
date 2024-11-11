@@ -143,3 +143,8 @@ class PostgreSQLKlustRDAO(KlustRDAO):
     def image_from_image(self, image_name):
             return self._execute_simple_query(
                         f'SELECT img_data FROM klustr.image WHERE name=%s;',(image_name,))
+    
+    def label_count_from_dataset(self, dataset_name):
+        return self._execute_simple_query(
+                    f'SELECT COUNT(*) AS label_count FROM klustr.select_label_from_data_set(%s)',(dataset_name,)
+        )

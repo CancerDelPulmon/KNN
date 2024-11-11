@@ -80,10 +80,15 @@ class DataSelectorWidget(QWidget):
         included_in_dataset_group = QGroupBox('Included in dataset')
         included_in_dataset_layout = QFormLayout()
 
-        included_in_dataset_layout.add_row('Category count:', QLabel('2'))
-        included_in_dataset_layout.add_row('Training image count:', QLabel('4'))
-        included_in_dataset_layout.add_row('Test image count:', QLabel('6'))
-        included_in_dataset_layout.add_row('Total image count:', QLabel('10'))
+        self.category_count_label = QLabel()
+        self.training_image_count = QLabel()
+        self.test_image_count = QLabel()
+        self.total_image_count = QLabel()
+
+        included_in_dataset_layout.add_row('Category count:', self.category_count_label)
+        included_in_dataset_layout.add_row('Training image count:', self.training_image_count)
+        included_in_dataset_layout.add_row('Test image count:', self.test_image_count)
+        included_in_dataset_layout.add_row('Total image count:',  self.total_image_count)
 
         included_in_dataset_group.set_layout(included_in_dataset_layout)
         dataset_horizontal_layout.add_widget(included_in_dataset_group)
@@ -92,9 +97,13 @@ class DataSelectorWidget(QWidget):
         Transformation_group = QGroupBox('Transformation')
         Transformation_layout = QFormLayout()        
 
-        Transformation_layout.add_row("Translated:", QLabel("true"))
-        Transformation_layout.add_row("Rotated:", QLabel("false"))
-        Transformation_layout.add_row("Scaled:", QLabel("false"))
+        self.translated_label = QLabel()
+        self.rotated_label = QLabel()
+        self.scaled_label = QLabel()
+
+        Transformation_layout.add_row("Translated:", self.translated_label)
+        Transformation_layout.add_row("Totated:", self.rotated_label)
+        Transformation_layout.add_row("Scaled:", self.scaled_label)
 
         Transformation_group.set_layout(Transformation_layout)
         dataset_horizontal_layout.add_widget(Transformation_group)
@@ -208,6 +217,13 @@ class DataSelectorWidget(QWidget):
 
     def get_image_name(self, index):
         return self.single_test_combo.item_text(index)
+    
+
+    def display_dataset_info(self, index):
+        new_category_count_text = str(self.model.get_category_count(self.get_dataset_name(index)))
+        self.category_count_label.set_text(new_category_count_text)
+        # new_training_image_text = self.model.get_training_image_count()
+        # self.training_image_label.set_text(new_category_count_text)
 
 
 
@@ -219,6 +235,7 @@ class DataSelectorWidget(QWidget):
         dataset_name = self.get_dataset_name(index)
         if dataset_name:
             self.populate_images_single_test_combo(dataset_name)
+            self.display_dataset_info(index)
         
     
     @Slot(int)

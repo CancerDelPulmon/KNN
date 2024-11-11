@@ -46,6 +46,18 @@ class Model():
             return "Database Error", "Database connection is not available."    
 
 
+
+    def get_category_count(self, dataset_name):
+        if self.dao.is_available:
+            query = self.dao.label_count_from_dataset(dataset_name)
+            return query[0][0]
+        
+    def get_training_image_count(self, dataset_name):
+        if self.dao.is_available:
+            query = self.dao.label_count_from_dataset()
+            return query[0][0]
+
+
     def analyse_data(self):
         pass
     def perimeter(self):
