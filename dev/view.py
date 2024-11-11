@@ -163,7 +163,7 @@ class DataSelectorWidget(QWidget):
         max_distance_slider.set_minimum(0)
         max_distance_slider.set_maximum(100)
         max_distance_slider.set_value(30) 
-        max_distance_slider.valueChanged.connect( lambda value: max_distance_label.setText(f"Max dist = {value/100:.2f}") )
+        max_distance_slider.valueChanged.connect( lambda value: max_distance_label.set_text(f"Max dist = {value/100:.2f}") )
         max_distance_layout.add_widget(max_distance_label)
         max_distance_layout.add_widget(max_distance_slider)
 
