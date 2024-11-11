@@ -13,10 +13,7 @@ class Main():
         self.view = View(self.model)
 
     def run (self):
-        self.view.show()
-
-        self.model.compactness() # pour test 
-    
+        self.view.show()    
 
 
 if __name__ == "__main__":

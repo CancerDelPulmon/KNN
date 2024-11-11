@@ -33,9 +33,17 @@ class Model():
         else:
             return "Database Error", "Database connection is not available."    
 
-
     def get_image_from_image_name(self, image_name):
-        ... # A continuer
+        if self.dao.is_available:
+            image = self.dao.image_from_image(image_name)
+            if image:
+                image_data = image[0][0]
+                qimage = qimage_argb32_from_png_decoding(image_data) 
+                return qimage
+            else:
+                return  "No Images", "No images available in the database."
+        else:
+            return "Database Error", "Database connection is not available."    
 
 
     def analyse_data(self):
@@ -58,7 +66,6 @@ class Model():
         sql_image = sql_image_result[0][3]
         image = qimage_argb32_from_png_decoding(sql_image)
         np_image = ndarray_from_qimage_argb32(image)
-        np_image.reshape(150,150)
         print(np_image)
     
     def circle_ratio(self):

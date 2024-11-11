@@ -139,3 +139,7 @@ class PostgreSQLKlustRDAO(KlustRDAO):
         return self._execute_simple_query(
                         f'''SELECT * FROM klustr.select_image_from_data_set(%s, %s);''',
                         (dataset_name, training_image))
+    
+    def image_from_image(self, image_name):
+            return self._execute_simple_query(
+                        f'SELECT img_data FROM klustr.image WHERE name=%s;',(image_name,))

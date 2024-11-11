@@ -1,9 +1,9 @@
 import sys
-from PySide6.QtWidgets import ( QApplication, QMainWindow, QWidget, 
+from PySide6.QtWidgets import ( QMainWindow, QWidget, 
                                 QHBoxLayout, QVBoxLayout, QTabWidget,
                                 QLabel, QGroupBox, QComboBox,QFormLayout,
                                 QPushButton, QSlider, QSplitter, QMessageBox, QListWidget)
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtCore import Qt, Slot  
 
 from __feature__ import snake_case
@@ -12,7 +12,6 @@ from __feature__ import snake_case
 from scatter_3d_viewer import QScatter3dViewer
 
 from klustr_widget import PostgreSQLCredential, PostgreSQLKlustRDAO, KlustRDataSourceViewWidget
-from model import Model
 
 
 class View(QMainWindow):
@@ -112,13 +111,14 @@ class DataSelectorWidget(QWidget):
         self.single_test_combo.add_item('No Dataset Selected')
         single_test_layout.add_widget(self.single_test_combo)
 
-        pixmap = QPixmap('../image_test.jpg')
-        image_label = QLabel()
+        
+        # self.pixmap = QPixmap()
+        self.image_label = QLabel()
         # Not in the center for some reason (to fix)
-        image_label.set_alignment(Qt.AlignCenter)
-        image_label.set_fixed_size(150,150)
-        image_label.set_pixmap(pixmap)
-        single_test_layout.add_widget(image_label)
+        self.image_label.set_alignment(Qt.AlignCenter)
+        # image_label.set_fixed_size(150,150)
+        # self.image_label.set_pixmap(self.pixmap)
+        single_test_layout.add_widget(self.image_label)
 
         classify_button = QPushButton('Classify')
         single_test_layout.add_widget(classify_button)
@@ -196,6 +196,9 @@ class DataSelectorWidget(QWidget):
 
     def display_selected_image(self, image_name):
         image = self.model.get_image_from_image_name(image_name)
+        pixmap = QPixmap.from_image(image)
+        self.image_label.set_pixmap(pixmap)
+
         
 
 
