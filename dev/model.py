@@ -1,6 +1,7 @@
 
 from klustr_widget import PostgreSQLCredential, PostgreSQLKlustRDAO
 from klustr_utils import qimage_argb32_from_png_decoding, ndarray_from_qimage_argb32
+import numpy as np
 
 class Model():
     def __init__(self):
@@ -71,34 +72,111 @@ class Model():
 
     def analyse_data(self, dataset_name):
         images = self.get_images_data_from_dataset(dataset_name)
+        names = self.get_images_names_from_dataset(dataset_name)
         #anaylyser les images un par un
-        for image_data in images:
+        for image_data, name in zip(images, names):
             image = qimage_argb32_from_png_decoding(image_data)
             np_image = ndarray_from_qimage_argb32(image)
+            np_image = 1 - np_image  # Invert the image
+            perimeter = self.perimeter(np_image)
+            area = self.area(np_image)
+            centroid = self.centroid(np_image)
+            outer_circle_radius = self.get_outer_circle_radius(np_image,centroid)
+            inner_circle_radius = self.get_inner_circle_radius(np_image, centroid)
+            print(name)
+            print("compactness", self.compactness(area, perimeter))
+            print("circle_ratio", self.circle_ratio(area, outer_circle_radius))
+            print("inner_circle_ratio", self.inner_circle_ratio(inner_circle_radius, outer_circle_radius))
+            print()
+            
 
-    def perimeter(self):
-        pass
-    def area(self):
-        pass
-    def centroid(self):
-        pass
+    def perimeter(self, image):
+        # Shift the image in all eight directions to check for boundaries
+        top = np.roll(image, -1, axis=0)
+        bottom = np.roll(image, 1, axis=0)
+        left = np.roll(image, -1, axis=1)
+        right = np.roll(image, 1, axis=1)
+        top_left = np.roll(top, -1, axis=1)
+        top_right = np.roll(top, 1, axis=1)
+        bottom_left = np.roll(bottom, -1, axis=1)
+        bottom_right = np.roll(bottom, 1, axis=1)
+
+        # Identify boundary pixels: pixels with value 1 and at least one neighbor with value 0
+        boundary_pixels = (
+            (image == 1) & (
+                (top == 0) | (bottom == 0) | 
+                (left == 0) | (right == 0) | 
+                (top_left == 0) | (top_right == 0) | 
+                (bottom_left == 0) | (bottom_right == 0)
+            )
+        )
+
+        # Count the perimeter pixels
+        perimeter = np.sum(boundary_pixels)
+        return perimeter
+    
+    def area(self, array):
+        return np.sum(array)
+    
+    def centroid(self, image):
+        c, r = np.meshgrid(np.arange(image.shape[1]), np.arange(image.shape[0]))
+        return (np.sum(r * image), np.sum(c * image)) / self.area(image)
+
+    def get_outer_circle_radius(self, image, centroid):
+        # Get the centroid coordinates
+        y_center, x_center = centroid
+        
+        # Get all positions of '1' pixels
+        rows, cols = np.where(image == 1)
+        
+        # Calculate the Euclidean distances from the centroid to each '1' pixel
+        distances = np.sqrt((rows - y_center) ** 2 + (cols - x_center) ** 2)
+        
+        # Find the maximum distance, which represents the radius
+        radius = np.max(distances)
+        
+        return radius
+    
+    def get_inner_circle_radius(self, image, centroid):
+        centroid_y, centroid_x = centroid
+
+        # Shift the array to find neighbors
+        top = np.roll(image, -1, axis=0)
+        bottom = np.roll(image, 1, axis=0)
+        left = np.roll(image, -1, axis=1)
+        right = np.roll(image, 1, axis=1)
+        top_left = np.roll(top, -1, axis=1)
+        top_right = np.roll(top, 1, axis=1)
+        bottom_left = np.roll(bottom, -1, axis=1)
+        bottom_right = np.roll(bottom, 1, axis=1)
+
+        # Identify boundary pixels: pixels with value 1 and at least one neighbor with value 0
+        boundary_pixels = (
+            (image == 1) & (
+                (top == 0) | (bottom == 0) | 
+                (left == 0) | (right == 0) | 
+                (top_left == 0) | (top_right == 0) | 
+                (bottom_left == 0) | (bottom_right == 0)
+            )
+        )
+
+        # Get the coordinates of boundary pixels
+        boundary_y, boundary_x = np.where(boundary_pixels)
+
+        # Calculate the distances from the centroid to each boundary pixel
+        distances_to_centroid = np.sqrt((boundary_y - centroid_y) ** 2 + (boundary_x - centroid_x) ** 2)
+
+        # The largest inner circle radius is the minimum distance to the boundary
+        max_inner_radius = np.min(distances_to_centroid) if distances_to_centroid.size > 0 else 0
+
+        return max_inner_radius
 
     # En test
-    def compactness(self):
-        import numpy as np
-        import sys
-        # np.set_printoptions(threshold=sys.maxsize)
-        sql_result = self.dao.image_from_label(1)
-        sql_image_id = sql_result[0][2]
-        sql_image_result = self.dao._execute_simple_query('SELECT * FROM klustr.image WHERE id=%s;', (sql_image_id,))
-        sql_image = sql_image_result[0][3]
-        image = qimage_argb32_from_png_decoding(sql_image)
-        np_image = ndarray_from_qimage_argb32(image)
-        print(np_image)
+    def compactness(self, area, perimeter):
+        return (4*np.pi * area) / (perimeter ** 2)
     
-    def circle_ratio(self):
-        pass
-    def inner_circle_ratio(self):
-        pass
-    def area(self):
-        pass
+    def circle_ratio(self, area, radius):
+        return area / (np.pi * radius ** 2)
+    
+    def inner_circle_ratio(self, inner_radius, outer_radius):
+        return inner_radius / outer_radius
