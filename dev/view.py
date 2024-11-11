@@ -1,4 +1,3 @@
-import sys
 from PySide6.QtWidgets import ( QMainWindow, QWidget, 
                                 QHBoxLayout, QVBoxLayout, QTabWidget,
                                 QLabel, QGroupBox, QComboBox,QFormLayout,
@@ -81,14 +80,14 @@ class DataSelectorWidget(QWidget):
         included_in_dataset_layout = QFormLayout()
 
         self.category_count_label = QLabel()
-        self.training_image_count = QLabel()
-        self.test_image_count = QLabel()
-        self.total_image_count = QLabel()
+        self.training_image_count_label = QLabel()
+        self.test_image_count_label = QLabel()
+        self.total_image_count_label = QLabel()
 
         included_in_dataset_layout.add_row('Category count:', self.category_count_label)
-        included_in_dataset_layout.add_row('Training image count:', self.training_image_count)
-        included_in_dataset_layout.add_row('Test image count:', self.test_image_count)
-        included_in_dataset_layout.add_row('Total image count:',  self.total_image_count)
+        included_in_dataset_layout.add_row('Training image count:', self.training_image_count_label)
+        included_in_dataset_layout.add_row('Test image count:', self.test_image_count_label)
+        included_in_dataset_layout.add_row('Total image count:',  self.total_image_count_label)
 
         included_in_dataset_group.set_layout(included_in_dataset_layout)
         dataset_horizontal_layout.add_widget(included_in_dataset_group)
@@ -102,7 +101,7 @@ class DataSelectorWidget(QWidget):
         self.scaled_label = QLabel()
 
         Transformation_layout.add_row("Translated:", self.translated_label)
-        Transformation_layout.add_row("Totated:", self.rotated_label)
+        Transformation_layout.add_row("Rotated:", self.rotated_label)
         Transformation_layout.add_row("Scaled:", self.scaled_label)
 
         Transformation_group.set_layout(Transformation_layout)
@@ -220,10 +219,31 @@ class DataSelectorWidget(QWidget):
     
 
     def display_dataset_info(self, index):
-        new_category_count_text = str(self.model.get_category_count(self.get_dataset_name(index)))
+        dataset_name = self.get_dataset_name(index)
+
+        # Included in dataset
+        new_category_count_text = str(self.model.get_category_count(dataset_name))
         self.category_count_label.set_text(new_category_count_text)
-        # new_training_image_text = self.model.get_training_image_count()
-        # self.training_image_label.set_text(new_category_count_text)
+
+        new_training_image_count_text = str(self.model.get_image_count(dataset_name, True))
+        self.training_image_count_label.set_text(new_training_image_count_text)
+
+        new_test_image_count_text = str(self.model.get_image_count(dataset_name, False))
+        self.test_image_count_label.set_text(new_test_image_count_text)
+
+        new_total_image_count_text = str(self.model.get_total_image_count(dataset_name))
+        self.total_image_count_label.set_text(new_total_image_count_text)
+
+
+        # Transformation
+        new_translated_value_text = str(self.model.get_translated_value(dataset_name))
+        self.translated_label.set_text(new_translated_value_text)
+
+        new_rotated_value_text = str(self.model.get_rotated_value(dataset_name))
+        self.rotated_label.set_text(new_rotated_value_text)
+
+        new_scaled_value_text = str(self.model.get_scaled_value(dataset_name))
+        self.scaled_label.set_text(new_scaled_value_text)
 
 
 

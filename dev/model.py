@@ -35,7 +35,7 @@ class Model():
 
     def get_image_from_image_name(self, image_name):
         if self.dao.is_available:
-            image = self.dao.image_from_image(image_name)
+            image = self.dao.image_data_from_image(image_name)
             if image:
                 image_data = image[0][0]
                 qimage = qimage_argb32_from_png_decoding(image_data) 
@@ -44,6 +44,7 @@ class Model():
                 return  "No Images", "No images available in the database."
         else:
             return "Database Error", "Database connection is not available."  
+
 
     def get_images_data_from_dataset(self, dataset_name):
         if self.dao.is_available:
@@ -57,15 +58,53 @@ class Model():
             return "Database Error", "Database connection is not available."  
 
 
+    def get_translated_value(self, dataset_name):
+        if self.dao.is_available:
+            translated_value = self.dao.translated_from_dataset(dataset_name)
+            if translated_value:
+                return translated_value[0][0]
+            else:
+                return  "No Datasets", "No datasets available in the database."
+        else:
+            return "Database Error", "Database connection is not available."  
+            
+
+    def get_rotated_value(self, dataset_name):
+        if self.dao.is_available:
+            rotated_value = self.dao.rotated_from_dataset(dataset_name)
+            if rotated_value:
+                return rotated_value[0][0]
+            else:
+                return  "No Datasets", "No datasets available in the database."
+        else:
+            return "Database Error", "Database connection is not available."  
+
+
+    def get_scaled_value(self, dataset_name):
+        if self.dao.is_available:
+            scaled_value = self.dao.scaled_from_dataset(dataset_name)
+            if scaled_value:
+                return scaled_value[0][0]
+            else:
+                return  "No Datasets", "No datasets available in the database."
+        else:
+            return "Database Error", "Database connection is not available."  
+
+
 
     def get_category_count(self, dataset_name):
         if self.dao.is_available:
             query = self.dao.label_count_from_dataset(dataset_name)
             return query[0][0]
         
-    def get_training_image_count(self, dataset_name):
+    def get_image_count(self, dataset_name, training:bool):
         if self.dao.is_available:
-            query = self.dao.label_count_from_dataset()
+            query = self.dao.image_count_from_dataset(dataset_name, training)
+            return query[0][0]
+        
+    def get_total_image_count(self, dataset_name):
+        if self.dao.is_available:
+            query = self.dao.total_image_count_from_dataset(dataset_name)
             return query[0][0]
 
 
@@ -75,6 +114,7 @@ class Model():
         for image_data in images:
             image = qimage_argb32_from_png_decoding(image_data)
             np_image = ndarray_from_qimage_argb32(image)
+
 
     def perimeter(self):
         pass
@@ -102,3 +142,13 @@ class Model():
         pass
     def area(self):
         pass
+
+
+
+
+
+
+
+
+
+

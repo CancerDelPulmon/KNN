@@ -140,11 +140,38 @@ class PostgreSQLKlustRDAO(KlustRDAO):
                         f'''SELECT * FROM klustr.select_image_from_data_set(%s, %s);''',
                         (dataset_name, training_image))
     
-    def image_from_image(self, image_name):
+    def image_data_from_image(self, image_name):
             return self._execute_simple_query(
-                        f'SELECT img_data FROM klustr.image WHERE name=%s;',(image_name,))
+                        f'SELECT img_data FROM klustr.image WHERE name=%s;',
+                        (image_name,))
     
     def label_count_from_dataset(self, dataset_name):
+            return self._execute_simple_query(
+                        f'''SELECT label_count from klustr.data_set_info WHERE name=%s''',
+                        (dataset_name,))
+    
+    def image_count_from_dataset(self, dataset_name, training:bool):
         return self._execute_simple_query(
-                    f'SELECT COUNT(*) AS label_count FROM klustr.select_label_from_data_set(%s)',(dataset_name,)
-        )
+                        f'''SELECT COUNT (*) AS image_count FROM klustr.select_image_from_data_set(%s, %s);''',
+                        (dataset_name, training))
+    
+    def total_image_count_from_dataset(self, dataset_name):
+        return self._execute_simple_query(
+                        f'''SELECT total_image_count from klustr.data_set_info WHERE name=%s''',
+                        (dataset_name,))
+    
+    def translated_from_dataset(self, dataset_name):
+        return self._execute_simple_query(
+                        f'''SELECT translated from klustr.data_set_info WHERE name=%s''',
+                        (dataset_name,))
+    
+    def rotated_from_dataset(self, dataset_name):
+        return self._execute_simple_query(
+                        f'''SELECT rotated from klustr.data_set_info WHERE name=%s''',
+                        (dataset_name,))
+    
+    def scaled_from_dataset(self, dataset_name):
+        return self._execute_simple_query(
+                        f'''SELECT scaled from klustr.data_set_info WHERE name=%s''',
+                        (dataset_name,))
+ 
