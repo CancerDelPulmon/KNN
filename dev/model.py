@@ -46,9 +46,9 @@ class Model():
         else:
             return "Database Error", "Database connection is not available."  
 
-    def get_images_data_from_dataset(self, dataset_name):
+    def get_images_data_from_dataset(self, dataset_name, training: bool = False):
         if self.dao.is_available:
-            images = self.dao.image_from_dataset(dataset_name, False)
+            images = self.dao.image_from_dataset(dataset_name, training)
             if images:
                 images_data = [row[6] for row in images]
                 return images_data
@@ -70,25 +70,26 @@ class Model():
             return query[0][0]
 
 
-    def analyse_data(self, dataset_name):
-        images = self.get_images_data_from_dataset(dataset_name)
-        names = self.get_images_names_from_dataset(dataset_name)
+    def analyse_data(self, dataset_name, training : bool = False):
+        images = self.get_images_data_from_dataset(dataset_name, training)
+        images_points = np.array()
         #anaylyser les images un par un
-        for image_data, name in zip(images, names):
+        for image_data in images:
             image = qimage_argb32_from_png_decoding(image_data)
             np_image = ndarray_from_qimage_argb32(image)
             np_image = 1 - np_image  # Invert the image
+
             perimeter = self.perimeter(np_image)
             area = self.area(np_image)
             centroid = self.centroid(np_image)
             outer_circle_radius = self.get_outer_circle_radius(np_image,centroid)
             inner_circle_radius = self.get_inner_circle_radius(np_image, centroid)
-            print(name)
-            print("compactness", self.compactness(area, perimeter))
-            print("circle_ratio", self.circle_ratio(area, outer_circle_radius))
-            print("inner_circle_ratio", self.inner_circle_ratio(inner_circle_radius, outer_circle_radius))
-            print()
-            
+            compactness = self.compactness(area, perimeter)
+            circle_ratio = self.circle_ratio(area, outer_circle_radius)
+            inner_circle_ratio = self.inner_circle_ratio(inner_circle_radius, outer_circle_radius)
+            # add point to array of all the points
+            images_points = np.append(images_points, (compactness, circle_ratio, inner_circle_ratio))
+        return images_points   
 
     def perimeter(self, image):
         # Shift the image in all eight directions to check for boundaries
