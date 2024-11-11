@@ -43,7 +43,18 @@ class Model():
             else:
                 return  "No Images", "No images available in the database."
         else:
-            return "Database Error", "Database connection is not available."    
+            return "Database Error", "Database connection is not available."  
+
+    def get_images_data_from_dataset(self, dataset_name):
+        if self.dao.is_available:
+            images = self.dao.image_from_dataset(dataset_name, False)
+            if images:
+                images_data = [row[6] for row in images]
+                return images_data
+            else:
+                return  "No Datasets", "No datasets available in the database."
+        else:
+            return "Database Error", "Database connection is not available."  
 
 
 
@@ -58,8 +69,13 @@ class Model():
             return query[0][0]
 
 
-    def analyse_data(self):
-        pass
+    def analyse_data(self, dataset_name):
+        images = self.get_images_data_from_dataset(dataset_name)
+        #anaylyser les images un par un
+        for image_data in images:
+            image = qimage_argb32_from_png_decoding(image_data)
+            np_image = ndarray_from_qimage_argb32(image)
+
     def perimeter(self):
         pass
     def area(self):
