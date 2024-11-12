@@ -1,8 +1,9 @@
 from PySide6.QtWidgets import ( QMainWindow, QWidget, 
                                 QHBoxLayout, QVBoxLayout, QTabWidget,
                                 QLabel, QGroupBox, QComboBox,QFormLayout,
-                                QPushButton, QSlider, QSplitter, QMessageBox)
-from PySide6.QtGui import QPixmap, QImage
+                                QPushButton, QSlider, QSplitter, QMessageBox,
+                                QDialog, QTextEdit)
+from PySide6.QtGui import QPixmap
 from color_sequence import QColorSequence
 from PySide6.QtCore import Qt, Slot  
 
@@ -127,12 +128,8 @@ class DataSelectorWidget(QWidget):
         single_test_layout.add_widget(self.single_test_combo)
 
         
-        # self.pixmap = QPixmap()
         self.image_label = QLabel()
-        # Not in the center for some reason (to fix)
         self.image_label.set_alignment(Qt.AlignCenter)
-        # image_label.set_fixed_size(150,150)
-        # self.image_label.set_pixmap(self.pixmap)
         single_test_layout.add_widget(self.image_label)
 
         self.classify_button = QPushButton('Classify')
@@ -153,34 +150,22 @@ class DataSelectorWidget(QWidget):
         knn_parameters_widget.set_layout(knn_parameters_layout)
 
         k_layout = QHBoxLayout()
-        k_label = QLabel('K = 3')
+        self.k_label = QLabel('K = 3')
         self.k_slider = QSlider(Qt.Horizontal)
         self.k_slider.set_maximum_width(250)
         self.k_slider.set_minimum(1)
         self.k_slider.set_maximum(10)
         self.k_slider.set_value(3)     
-        self.k_slider.valueChanged.connect( lambda value: k_label.set_text(f'K = {value}') )
-        k_layout.add_widget(k_label)
+        self.k_slider.valueChanged.connect(self.k_changed)
+        k_layout.add_widget(self.k_label)
         k_layout.add_widget(self.k_slider)
 
         knn_parameters_layout.add_layout(k_layout)
 
-        max_distance_layout = QHBoxLayout()
-        max_distance_label = QLabel('Max dist = 0.30')
-        max_distance_slider = QSlider(Qt.Horizontal)
-        max_distance_slider.set_fixed_width(250)
-        max_distance_slider.set_minimum(0)
-        max_distance_slider.set_maximum(100)
-        max_distance_slider.set_value(30) 
-        max_distance_slider.valueChanged.connect( lambda value: max_distance_label.set_text(f"Max dist = {value/100:.2f}") )
-        max_distance_layout.add_widget(max_distance_label)
-        max_distance_layout.add_widget(max_distance_slider)
-
-        knn_parameters_layout.add_layout(max_distance_layout)
-
-
 
         about_button = QPushButton('About')
+        about_button.clicked.connect(self.show_about_dialog)
+
         
         main_layout = QVBoxLayout(self)
         main_layout.add_widget(dataset_widget)
@@ -303,5 +288,86 @@ class DataSelectorWidget(QWidget):
         self.classify_button.set_disabled(True)
 
 
+    @Slot(int)
+    def k_changed(self, value):
+        if self.image_label.pixmap():
+            self.k_label.set_text(f'K = {value}')
+            self.classify_button.set_disabled(False)
 
 
+    def show_about_dialog(self):
+        about_dialog = AboutDialog()
+        about_dialog.show()
+        about_dialog.exec()
+
+
+class AboutDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.set_window_title("KlustR KNN Classifier")
+
+        layout = QVBoxLayout(self)
+
+        text_edit = QTextEdit(self)
+        text_edit.set_read_only(True)
+        text_edit.set_plain_text(self.get_about_text())
+
+        layout.add_widget(text_edit)
+        self.set_minimum_size(650, 600)
+
+
+        ok_button = QPushButton("OK", self)
+        ok_button.clicked.connect(self.accept)
+
+        layout.add_widget(ok_button)
+
+
+    def get_about_text(self):
+        return '''
+                Ce logiciel est le projet no 1 du cours C52.
+
+                Il a été réalisé par :
+                - Lyam Tremblay Martinez
+                - Christopher Bray
+
+                
+                Il consiste à faire de la classification d'image avec les concepts suivants :
+                - K-Nearest Neighbors (KNN)
+                - Réduction de dimensionnalité
+                - Analyse d'image
+
+                
+                Nos 3 descripteurs de forme sont :
+                - Compacité (compactness)
+                    en ratio pour le domaine [0, 1]
+                    correspondant à (4 * PI * aire de la forme) / périmètre de la forme ^2.  
+                    Une forme parfaitement circulaire a une compacité de 1, alors que les formes plus complexes ont des valeurs plus proches de 0.
+                
+                - Ratio du cercle (circle_ratio)
+                    en ratio pour le domaine [0, 1]
+                    correspondant à aire de la forme / aire du cercle de même taille.  
+                    Compare l'aire de la forme à l'aire d'un cercle circonscrit, donnant une mesure de la circularité.
+                
+                - Ratio du cercle intérieur (inner_circle_ratio)
+                    en ratio pour le domaine [0, 1]
+                    correspondant à rayon du cercle intérieur / rayon du ercle extérieur.  
+                    Mesure le rapport entre le rayon du plus grand cercle inscrit dans la forme et le rayon du plus petit cercle circonscrit, indiquant la présence de concavités.
+
+                    
+                Plus précisément, ce laboratoire permet de mettre en pratique les notions de:
+                - Manipulation d'images numériques
+                - Extraction de caractéristiques
+                - Classification supervisée
+
+                
+                Un effort d'abstraction a été fait pour ces points :
+                - La représentation des images en un espace 3D à partir des descripteurs.
+                - L'implémentation générique de l'algorithme KNN.
+
+
+                Finalement, l'ensemble de données le plus complexe que nous avons été capable de résoudre est :
+                - Zoo-Tiny  
+
+                Pour l'instant, le seul que nous avons trouvé qui n'arrive pas à classifier est l'image:
+                - "rectangle_050_010_0052" qu'il voit comme "regular_3"
+                '''
