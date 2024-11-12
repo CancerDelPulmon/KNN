@@ -1,8 +1,9 @@
 from PySide6.QtWidgets import ( QMainWindow, QWidget, 
                                 QHBoxLayout, QVBoxLayout, QTabWidget,
                                 QLabel, QGroupBox, QComboBox,QFormLayout,
-                                QPushButton, QSlider, QSplitter, QMessageBox, QListWidget)
+                                QPushButton, QSlider, QSplitter, QMessageBox)
 from PySide6.QtGui import QPixmap, QImage
+from color_sequence import QColorSequence
 from PySide6.QtCore import Qt, Slot  
 
 from __feature__ import snake_case
@@ -49,7 +50,7 @@ class KnnImageClassificationWidget(QWidget):
         self.model = model
         self.set_window_title('KlustR KNN Classification')
         scatter_3d_viewer_widget = QScatter3dViewer()
-        data_selector_widget = DataSelectorWidget(model)
+        data_selector_widget = DataSelectorWidget(model, scatter_3d_viewer_widget)
         splitter = QSplitter(Qt.Horizontal)
         splitter.add_widget(data_selector_widget)
         splitter.add_widget(scatter_3d_viewer_widget)
@@ -59,8 +60,12 @@ class KnnImageClassificationWidget(QWidget):
 
 
 class DataSelectorWidget(QWidget):
-    def __init__(self, model, parent: QWidget = None):
+    def __init__(self, model, scatter_viewer, parent: QWidget = None):
         super().__init__(parent)
+        #Serie
+        self.series = {}
+
+        self.scatter_viewer = scatter_viewer
         self.model = model
         self.set_window_title('Data Selector')
         # Dataset
@@ -135,9 +140,9 @@ class DataSelectorWidget(QWidget):
         self.classify_button.clicked.connect(self.classify_image)
         single_test_layout.add_widget(self.classify_button)
 
-        result_label = QLabel('not classified')
-        result_label.set_alignment(Qt.AlignCenter)
-        single_test_layout.add_widget(result_label)
+        self.result_label = QLabel('not classified')
+        self.result_label.set_alignment(Qt.AlignCenter)
+        single_test_layout.add_widget(self.result_label)
 
 
 
@@ -264,6 +269,9 @@ class DataSelectorWidget(QWidget):
         if(images):
             self.knn = KNNClassifier(self.k_slider.value())
             self.knn.fit(images, labels)
+        self.scatter_viewer.clear()
+        self.result_label.set_text('not classified')
+        self.series = {}
     
     @Slot(int)
     def on_image_selected(self, index):
@@ -279,20 +287,21 @@ class DataSelectorWidget(QWidget):
     @Slot()
     def classify_image(self):
         points = self.model.analyse_single_image(self.image_current_array)
-        print(self.knn.predict(np.array([points])))
-        #self.classify_button.set_disabled(True)
+        points_array = np.array([points])
+        
+        # Predict the label
+        label = str(self.knn.predict(points_array)[0])
+        self.result_label.set_text(label)
+        # Ajouter point au Series
+        if label not in self.series.keys() :
+            self.series[label] = points_array
+            self.series[label + "color"] = QColorSequence.next()
+        else:
+            self.series[label] = np.append(self.series[label], points_array, axis=0)
+            self.scatter_viewer.remove_serie(label)
+        self.scatter_viewer.add_serie(self.series[label], self.series[label + "color"], title=label)
+        self.classify_button.set_disabled(True)
 
-    def load_data_into_viewer(self, data, title="Dataset"):
-        # Clear existing series and load new data into the viewer
-        """
-        self.scatter_viewer.clear()
-        # Convert data to NumPy array
-        data_np = np.array(data)
-        # Add series to viewer
-        color = QColorSequence.next()
-        self.scatter_viewer.add_serie(data_np, color, title=title)
-        """
-        pass
 
 
 
