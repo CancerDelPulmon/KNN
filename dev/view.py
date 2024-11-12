@@ -329,6 +329,7 @@ class AboutDialog(QDialog):
                 Il a été réalisé par :
                 - Lyam Tremblay Martinez
                 - Christopher Bray
+                - Yacine-Alexis Adam-Boulia
 
                 
                 Il consiste à faire de la classification d'image avec les concepts suivants :
@@ -345,12 +346,12 @@ class AboutDialog(QDialog):
                 
                 - Ratio du cercle (circle_ratio)
                     en ratio pour le domaine [0, 1]
-                    correspondant à aire de la forme / aire du cercle de même taille.  
+                    correspondant à l'aire de la forme / l'aire du cercle de même taille.  
                     Compare l'aire de la forme à l'aire d'un cercle circonscrit, donnant une mesure de la circularité.
                 
                 - Ratio du cercle intérieur (inner_circle_ratio)
                     en ratio pour le domaine [0, 1]
-                    correspondant à rayon du cercle intérieur / rayon du ercle extérieur.  
+                    correspondant au rayon du cercle intérieur / rayon du cercle extérieur.  
                     Mesure le rapport entre le rayon du plus grand cercle inscrit dans la forme et le rayon du plus petit cercle circonscrit, indiquant la présence de concavités.
 
                     
