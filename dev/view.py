@@ -7,10 +7,12 @@ from PySide6.QtCore import Qt, Slot
 
 from __feature__ import snake_case
 
-
+import numpy as np
 from scatter_3d_viewer import QScatter3dViewer
-
+from klustr_utils import ndarray_from_qimage_argb32
 from klustr_widget import PostgreSQLCredential, PostgreSQLKlustRDAO, KlustRDataSourceViewWidget
+from KNN import KNNClassifier
+
 
 
 class View(QMainWindow):
@@ -128,8 +130,10 @@ class DataSelectorWidget(QWidget):
         # self.image_label.set_pixmap(self.pixmap)
         single_test_layout.add_widget(self.image_label)
 
-        classify_button = QPushButton('Classify')
-        single_test_layout.add_widget(classify_button)
+        self.classify_button = QPushButton('Classify')
+        self.classify_button.set_disabled(True)
+        self.classify_button.clicked.connect(self.classify_image)
+        single_test_layout.add_widget(self.classify_button)
 
         result_label = QLabel('not classified')
         result_label.set_alignment(Qt.AlignCenter)
@@ -145,14 +149,14 @@ class DataSelectorWidget(QWidget):
 
         k_layout = QHBoxLayout()
         k_label = QLabel('K = 3')
-        k_slider = QSlider(Qt.Horizontal)
-        k_slider.set_maximum_width(250)
-        k_slider.set_minimum(1)
-        k_slider.set_maximum(10)
-        k_slider.set_value(3)     
-        k_slider.valueChanged.connect( lambda value: k_label.set_text(f'K = {value}') )
+        self.k_slider = QSlider(Qt.Horizontal)
+        self.k_slider.set_maximum_width(250)
+        self.k_slider.set_minimum(1)
+        self.k_slider.set_maximum(10)
+        self.k_slider.set_value(3)     
+        self.k_slider.valueChanged.connect( lambda value: k_label.set_text(f'K = {value}') )
         k_layout.add_widget(k_label)
-        k_layout.add_widget(k_slider)
+        k_layout.add_widget(self.k_slider)
 
         knn_parameters_layout.add_layout(k_layout)
 
@@ -254,9 +258,12 @@ class DataSelectorWidget(QWidget):
         self.index_dataset = index
         dataset_name = self.get_dataset_name(index)
         if dataset_name:
+            images, labels = self.model.analyse_data(dataset_name, True)
             self.populate_images_single_test_combo(dataset_name)
             self.display_dataset_info(index)
-        
+        if(images):
+            self.knn = KNNClassifier(self.k_slider.value())
+            self.knn.fit(images, labels)
     
     @Slot(int)
     def on_image_selected(self, index):
@@ -265,8 +272,15 @@ class DataSelectorWidget(QWidget):
         image_name = self.get_image_name(index)
         if image_name:
             self.display_selected_image(image_name)
+            self.image_current_array = ndarray_from_qimage_argb32(self.model.get_image_from_image_name(image_name))
+            self.classify_button.set_disabled(False)
 
 
+    @Slot()
+    def classify_image(self):
+        points = self.model.analyse_single_image(self.image_current_array)
+        print(self.knn.predict(np.array([points])))
+        #self.classify_button.set_disabled(True)
 
     def load_data_into_viewer(self, data, title="Dataset"):
         # Clear existing series and load new data into the viewer
